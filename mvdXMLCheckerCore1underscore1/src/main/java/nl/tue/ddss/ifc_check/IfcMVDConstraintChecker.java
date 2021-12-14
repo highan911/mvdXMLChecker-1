@@ -107,7 +107,7 @@ public class IfcMVDConstraintChecker {
 		}
 
 		for (Object ifcObject : allClassInstances) {
-		    IfcHashMapBuilder ifcHashMapBuilder = new IfcHashMapBuilder(ifcObject, attributeRules);
+		    IfcHashMapBuilder ifcHashMapBuilder = new IfcHashMapBuilder(ifcObject, attributeRules, this.ifcversion);
 		    List<HashMap<AbstractRule, ObjectToValue>> hashMaps = ifcHashMapBuilder.getHashMaps();
 		    String comment = new String();
 		    for (HashMap<AbstractRule, ObjectToValue> hashMap : hashMaps)

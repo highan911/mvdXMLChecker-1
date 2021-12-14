@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import de.rwth_aachen.dc.ifc.IfcModelInstance;
 import org.buildingsmart_tech.mvdxml.mvdxml1_1.AbstractRule;
 import org.buildingsmart_tech.mvdxml.mvdxml1_1.AttributeRule;
 import org.buildingsmart_tech.mvdxml.mvdxml1_1.EntityRule;
@@ -20,6 +21,7 @@ public class IfcHashMapBuilder {
     private Object ifcObject;
     private List<AttributeRule> attributeRules;
     private List<HashMap<AbstractRule, ObjectToValue>> hashMaps;
+	private final String ifc_class_base;
 
     public Object getIfcObject() {
 	return ifcObject;
@@ -29,9 +31,20 @@ public class IfcHashMapBuilder {
 	return attributeRules;
     }
 
-    public IfcHashMapBuilder(Object ifcObject, List<AttributeRule> attributeRules) {
-	this.ifcObject = ifcObject;
-	this.attributeRules = attributeRules;
+    public IfcHashMapBuilder(Object ifcObject, List<AttributeRule> attributeRules, IfcModelInstance.IfcVersion ifcversion) {
+		this.ifcObject = ifcObject;
+		this.attributeRules = attributeRules;
+
+		switch (ifcversion) {
+			default:
+			case IFC2x3:
+				ifc_class_base = "org.bimserver.models.ifc2x3tc1.";
+				break;
+			case IFC4:
+				ifc_class_base = "org.bimserver.models.ifc4.";
+				break;
+		}
+
     }
 
     public List<HashMap<AbstractRule, ObjectToValue>> getHashMaps() throws ClassNotFoundException {
@@ -53,18 +66,22 @@ public class IfcHashMapBuilder {
 	    String attributeName = attributeRule.getAttributeName();
 	    Object value = new Object();
 	    try {
-		if (ifcObject != null) {
-		    Method m = ifcObject.getClass().getMethod("get" + attributeName);
-		    value = m.invoke(ifcObject);
-		} else {
-		    value = null;
-		}
-	    } catch (NoSuchMethodException | SecurityException e) {
-		communication.post(new CheckerErrorEvent(this.getClass().getName(),e.getMessage()));
-		e.printStackTrace();
-	    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-		communication.post(new CheckerErrorEvent(this.getClass().getName(),e.getMessage()));
-		e.printStackTrace();
+			if (ifcObject != null) {
+				Method m = ifcObject.getClass().getMethod("get" + attributeName);
+				value = m.invoke(ifcObject);
+			} else {
+				value = null;
+			}
+		} catch (NoSuchMethodException e) {
+			communication.post(new CheckerErrorEvent(this.getClass().getName(),e.getMessage()));
+			System.out.println("NoSuchMethodException " + ifcObject.getClass().getName() + "." + "get" + attributeName);
+	    } catch (SecurityException e) {
+			communication.post(new CheckerErrorEvent(this.getClass().getName(),e.getMessage()));
+			e.printStackTrace();
+	    }
+	    catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			communication.post(new CheckerErrorEvent(this.getClass().getName(),e.getMessage()));
+			e.printStackTrace();
 	    }
 
 	    for (HashMap<AttributeRule, ObjectToValue> hm : hashMaps) {
@@ -101,7 +118,7 @@ public class IfcHashMapBuilder {
 			List<EntityRule> entityRules = attributeRule.getEntityRules().getEntityRule();
 			for (EntityRule entityRule : entityRules) {
 
-			    if (Class.forName("org.bimserver.models.ifc2x3tc1." + entityRule.getEntityName()).isInstance(valueList.get(0))) {
+			    if (Class.forName(ifc_class_base + entityRule.getEntityName()).isInstance(valueList.get(0))) {
 				if (entityRule.getAttributeRules() != null) {
 				    if (entityRule.getAttributeRules().getAttributeRule().size() >= 1) {
 					hashMaps = buildHashMaps(valueList.get(0), entityRule.getAttributeRules().getAttributeRule(), hashMaps);
@@ -117,7 +134,7 @@ public class IfcHashMapBuilder {
 			    if (attributeRule.getEntityRules() != null) {
 				List<EntityRule> entityRules = attributeRule.getEntityRules().getEntityRule();
 				for (EntityRule entityRule : entityRules) {
-				    if (Class.forName("org.bimserver.models.ifc2x3tc1." + entityRule.getEntityName()).isInstance(valueList.get(i))) {
+				    if (Class.forName(ifc_class_base + entityRule.getEntityName()).isInstance(valueList.get(i))) {
 					if (entityRule.getAttributeRules() != null) {
 					    hashMaps = buildHashMaps((valueList).get(i), entityRule.getAttributeRules().getAttributeRule(), hashMaps);
 					}
@@ -130,7 +147,7 @@ public class IfcHashMapBuilder {
 			    if (attributeRule.getEntityRules() != null) {
 				List<EntityRule> entityRules = attributeRule.getEntityRules().getEntityRule();
 				for (EntityRule entityRule : entityRules) {
-				    if (Class.forName("org.bimserver.models.ifc2x3tc1." + entityRule.getEntityName()).isInstance(valueList.get(i))) {
+				    if (Class.forName(ifc_class_base + entityRule.getEntityName()).isInstance(valueList.get(i))) {
 					if (entityRule.getAttributeRules() != null) {
 
 					    List<AttributeRule> attRuleList = entityRule.getAttributeRules().getAttributeRule();
@@ -150,7 +167,7 @@ public class IfcHashMapBuilder {
 		if (attributeRule.getEntityRules() != null) {
 		    List<EntityRule> entityRules = attributeRule.getEntityRules().getEntityRule();
 		    for (EntityRule entityRule : entityRules) {
-			if (Class.forName("org.bimserver.models.ifc2x3tc1." + entityRule.getEntityName()).isInstance(value)) {
+			if (Class.forName(ifc_class_base + entityRule.getEntityName()).isInstance(value)) {
 			    if (entityRule.getAttributeRules() != null) {
 				hashMaps = buildHashMaps(value, entityRule.getAttributeRules().getAttributeRule(), hashMaps);
 			    }
@@ -186,7 +203,7 @@ public class IfcHashMapBuilder {
 				    try {
 					if (object instanceof String) {
 					} else if (object instanceof Double) {
-					} else if (Class.forName("org.bimserver.models.ifc2x3tc1." + entityName).isInstance(object)) {
+					} else if (Class.forName(ifc_class_base + entityName).isInstance(object)) {
 					    derivedValue = new ArrayList<Object>();
 					    ((ArrayList<Object>) derivedValue).add(object);
 					}
@@ -196,7 +213,7 @@ public class IfcHashMapBuilder {
 			    } else {
 				derivedValue = null;
 				try {
-				    if (Class.forName("org.bimserver.models.ifc2x3tc1." + entityName).isInstance(value)) {
+				    if (Class.forName(ifc_class_base + entityName).isInstance(value)) {
 					derivedValue = value;
 				    }
 				} catch (ClassNotFoundException e) {

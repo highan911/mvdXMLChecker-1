@@ -29,13 +29,17 @@ public class MVDConstraint{
 	public List<TemplateRule> getTemplateRules() {
 		templateRules=new ArrayList<TemplateRule>();
 		Rules rules = concept.getRules();
-		List<JAXBElement<? extends AbstractRule>> abstractRules = rules
-				.getAbstractRule();
-		for (JAXBElement<? extends AbstractRule> jAXBElementRule : abstractRules) {
-			TemplateRule templateRule = (TemplateRule) jAXBElementRule
-					.getValue();
-			templateRules.add(templateRule);
+
+		if(rules!=null){
+			List<JAXBElement<? extends AbstractRule>> abstractRules = rules
+					.getAbstractRule();
+			for (JAXBElement<? extends AbstractRule> jAXBElementRule : abstractRules) {
+				TemplateRule templateRule = (TemplateRule) jAXBElementRule
+						.getValue();
+				templateRules.add(templateRule);
+			}
 		}
+
 		return templateRules;
 	}
 	
@@ -50,14 +54,17 @@ public class MVDConstraint{
 		this.requirement=requirement;
 		List<AttributeRule> attributeRuleList=new ArrayList<AttributeRule>();
 		Rules rules = conceptTemplate.getRules();
-		List<JAXBElement<? extends AbstractRule>> abstractRules = rules
-				.getAbstractRule();
-		for (JAXBElement<? extends AbstractRule> jAXBElementRule : abstractRules) {
-			AttributeRule attributeRule = (AttributeRule) jAXBElementRule
-					.getValue();
-			attributeRuleList.add(attributeRule);
+		if(rules!=null){
+			List<JAXBElement<? extends AbstractRule>> abstractRules = rules
+					.getAbstractRule();
+			for (JAXBElement<? extends AbstractRule> jAXBElementRule : abstractRules) {
+				AttributeRule attributeRule = (AttributeRule) jAXBElementRule
+						.getValue();
+				attributeRuleList.add(attributeRule);
+			}
 		}
 		this.attributeRules=attributeRuleList;
+
 
 	}
 

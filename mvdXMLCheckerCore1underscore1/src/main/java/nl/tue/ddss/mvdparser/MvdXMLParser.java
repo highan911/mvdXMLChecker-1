@@ -89,7 +89,10 @@ public class MvdXMLParser {
 	public List<MVDConstraint> getMVDConstraints() throws JAXBException {
 		List<MVDConstraint> conceptTrees = new ArrayList<MVDConstraint>();
 		for (ConceptRoot conceptRoot : extractConceptRoots()) {
-			List<Concept> concepts = conceptRoot.getConcepts().getConcept();
+			ConceptRoot.Concepts conceptss = conceptRoot.getConcepts();
+			if(conceptss==null) continue;
+
+			List<Concept> concepts = conceptss.getConcept();
 			for (Concept concept : concepts) {
 				String templateRef = concept.getTemplate().getRef();
 				for (ConceptTemplate conceptTemplate : templates) {
