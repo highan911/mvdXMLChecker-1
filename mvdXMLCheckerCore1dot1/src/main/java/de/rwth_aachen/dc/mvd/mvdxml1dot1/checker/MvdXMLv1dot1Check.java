@@ -21,16 +21,20 @@ import nl.tue.ddss.mvdxml1dot1.ifc_check.IfcMVDConstraintChecker;
 public class MvdXMLv1dot1Check {
 
     public static IssueReport check(Path ifcFile, String mvdXMLFile) throws JAXBException, DeserializeException, IOException, URISyntaxException, RenderEngineException {
-	MvdXMLValidationRules mvdXML = new MvdXMLValidationRules(mvdXMLFile);
+	System.out.println("start reading mvdXML... " + mvdXMLFile);
 
+	MvdXMLValidationRules mvdXML = new MvdXMLValidationRules(mvdXMLFile);
+	List<MVDConceptConstraint> constraints = mvdXML.getMVDConstraints();
+
+	System.out.println("start reading IFC... " + ifcFile);
 	IfcModelInstance model = new IfcModelInstance();
 	IfcModelInterface bimserver_ifcModel = model.readModel(ifcFile, Paths.get("."));
 	if(bimserver_ifcModel==null)  // IFC2x2 causes this to return null
 	    return null;
 	bimserver_ifcModel.fixInverseMismatches();
-	List<MVDConceptConstraint> constraints = mvdXML.getMVDConstraints();
 
 	if (model.getIfcversion().isPresent()) {
+		System.out.println("start checking... ");
 	    IfcMVDConstraintChecker ifcChecker = new IfcMVDConstraintChecker(constraints, model.getIfcversion().get());
 	    IssueReport issuereport = ifcChecker.checkModel(bimserver_ifcModel, ifcFile.toFile());
 	    return issuereport;

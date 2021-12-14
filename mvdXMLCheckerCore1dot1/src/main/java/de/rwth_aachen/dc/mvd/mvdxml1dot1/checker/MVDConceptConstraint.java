@@ -54,40 +54,69 @@ public class MVDConceptConstraint {
 
 	this.concept_templateRules = new ArrayList<TemplateRule>();
 	try {
-	    for (Object t : concept.getTemplateRules().getTemplateRulesOrTemplateRule()) {
-		if (TemplateRules.class.isInstance(t)) {
-		    for (Object t2 : ((TemplateRules) t).getTemplateRulesOrTemplateRule())
-			if (TemplateRules.class.isInstance(t2))
-			    this.concept_templateRules.add((TemplateRule) t2);
-		} else
-		    this.concept_templateRules.add((TemplateRule) t);
-	    }
+		TemplateRules trs = concept.getTemplateRules();
+		if(trs != null){
+			for (Object t : trs.getTemplateRulesOrTemplateRule()) {
+				if (TemplateRules.class.isInstance(t)) {
+					for (Object t2 : ((TemplateRules) t).getTemplateRulesOrTemplateRule())
+						if (TemplateRules.class.isInstance(t2))
+							this.concept_templateRules.add((TemplateRule) t2);
+				} else
+					this.concept_templateRules.add((TemplateRule) t);
+			}
+		}else{
+			//pass
+		}
+
 	} catch (Exception e) {
 	    e.printStackTrace();
-
 	}
 
 	this.applicability_templateRules = new ArrayList<TemplateRule>();
-	try {
-	    for (Object t : conceptRoot.getApplicability().getTemplateRules().getTemplateRulesOrTemplateRule())
-		if (TemplateRules.class.isInstance(t)) {
-		    for (Object t2 : ((TemplateRules) t).getTemplateRulesOrTemplateRule())
-			if (TemplateRules.class.isInstance(t2))
-			    this.applicability_templateRules.add((TemplateRule) t2);
-		} else
-		    this.applicability_templateRules.add((TemplateRule) t);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	    System.out.println("conceptRoot.getApplicability():" + conceptRoot.getApplicability());
-	    System.out.println("conceptRoot.getApplicability().getTemplateRules():" + conceptRoot.getApplicability().getTemplateRules());
-	    // just in case there aren't any
-	}
 
-	this.concept_attributeRules = concept_conceptTemplate.getRules().getAttributeRule();
-	if (applicability_conceptTemplate != null && applicability_conceptTemplate.getRules() != null)
-	    this.applicability_attributeRules = applicability_conceptTemplate.getRules().getAttributeRule();
-	else
-	    this.applicability_attributeRules = new ArrayList<AttributeRule>();
+		ConceptRoot.Applicability appli = conceptRoot.getApplicability();
+		if(appli != null) {
+			TemplateRules trs = appli.getTemplateRules();
+			if (trs != null) {
+				List<Object> rules = trs.getTemplateRulesOrTemplateRule();
+				if (rules != null) {
+					for (Object t : rules) {
+						try {
+							if (TemplateRules.class.isInstance(t)) {
+								for (Object t2 : ((TemplateRules) t).getTemplateRulesOrTemplateRule())
+									if (TemplateRules.class.isInstance(t2))
+										this.applicability_templateRules.add((TemplateRule) t2);
+							} else
+								this.applicability_templateRules.add((TemplateRule) t);
+						} catch (Exception e) {
+							e.printStackTrace();
+							System.out.println("conceptRoot.getApplicability():" + conceptRoot.getApplicability());
+							System.out.println("conceptRoot.getApplicability().getTemplateRules():" + conceptRoot.getApplicability().getTemplateRules());
+							// just in case there aren't any
+						}
+					}
+				} else {
+					System.out.println("conceptRoot.getApplicability().getTemplateRules():getTemplateRulesOrTemplateRule():null");
+				}
+			} else {
+				System.out.println("conceptRoot.getApplicability().getTemplateRules():null");
+			}
+		} else {
+			//pass
+		}
+
+
+		ConceptTemplate.Rules c_rules = concept_conceptTemplate.getRules();
+		if(c_rules!=null) {
+			this.concept_attributeRules = c_rules.getAttributeRule();
+		} else {
+			this.concept_attributeRules = null;
+		}
+
+		if (applicability_conceptTemplate != null && applicability_conceptTemplate.getRules() != null)
+			this.applicability_attributeRules = applicability_conceptTemplate.getRules().getAttributeRule();
+		else
+			this.applicability_attributeRules = new ArrayList<AttributeRule>();
     }
 
     public ConceptRoot getConceptRoot() {

@@ -134,15 +134,22 @@ public class MvdXMLValidationRules {
 	    } catch (Exception e) {
 		// if not exists
 	    }
-	    List<Concept> concepts = conceptRoot.getConcepts().getConcept();
-	    for (Concept concept : concepts) {
-		String concept_templateRef = concept.getTemplate().getRef();
-		for (ConceptTemplate concept_conceptTemplate : concept_templates) {
-		    if (concept_conceptTemplate.getUuid().equals(concept_templateRef)) {
-			conceptTrees.add(new MVDConceptConstraint(conceptRoot, concept, concept_conceptTemplate, applicability_conceptTemplate));
-		    }
+
+	    ConceptRoot.Concepts conceptss = conceptRoot.getConcepts();
+	    if(conceptss!=null){
+			List<Concept> concepts = conceptss.getConcept();
+			for (Concept concept : concepts) {
+				String concept_templateRef = concept.getTemplate().getRef();
+				for (ConceptTemplate concept_conceptTemplate : concept_templates) {
+					if (concept_conceptTemplate.getUuid().equals(concept_templateRef)) {
+						conceptTrees.add(new MVDConceptConstraint(conceptRoot, concept, concept_conceptTemplate, applicability_conceptTemplate));
+					}
+				}
+			}
+		}else{
+	    	//pass
 		}
-	    }
+
 	}
 	return conceptTrees;
     }
