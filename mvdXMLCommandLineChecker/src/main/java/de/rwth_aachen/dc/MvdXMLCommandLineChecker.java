@@ -30,7 +30,15 @@ public class MvdXMLCommandLineChecker {
 	    // mvdXML 1.1
 	    if (MvdXMLVersionCheck.checkMvdXMLSchemaVersion(mvdXML, "http://buildingsmart-tech.org/mvd/XML/1.1")) {
 		System.out.println("mvdXML 1.1.");
+
+		long startTime =  System.currentTimeMillis();
+
 		IssueReport issuereport = MvdXMLv1dot1Check.check(Paths.get(ifcFile), mvdXML);
+
+		long endTime =  System.currentTimeMillis();
+		double usedTime = (endTime-startTime) / 1000.0;
+		System.out.println("Time used: " + usedTime + " s");
+
 		issues.addAll(issuereport.getIssues());
 		if (issues.size() > 0) {
 		    File tempBCFZipFile = new File("mvdXMLCheckResult_" + System.currentTimeMillis() + ".bcfzip");
@@ -47,9 +55,16 @@ public class MvdXMLCommandLineChecker {
 		// mvdXML 1_1
 		if (MvdXMLVersionCheck.checkMvdXMLSchemaVersion(mvdXML, "http://buildingsmart-tech.org/mvdXML/mvdXML1-1")) {
 		    System.out.println("mvdXML 1_1.");
-		    IssueReport issuereport = MvdXMLv1undescore1Check.check(Paths.get(ifcFile), mvdXML);
-		    issues.addAll(issuereport.getIssues());
 
+			long startTime =  System.currentTimeMillis();
+
+		    IssueReport issuereport = MvdXMLv1undescore1Check.check(Paths.get(ifcFile), mvdXML);
+
+			long endTime =  System.currentTimeMillis();
+			double usedTime = (endTime-startTime) / 1000.0;
+			System.out.println("Time used: " + usedTime + " s");
+
+		    issues.addAll(issuereport.getIssues());
 		    if (issues.size() > 0) {
 			File tempBCFZipFile = new File("mvdXMLCheckResult_" + System.currentTimeMillis() + ".bcfzip");
 			issuereport.writeReport(tempBCFZipFile.getAbsolutePath().toString());
